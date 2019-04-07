@@ -1,23 +1,30 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
-  </div>
+ <el-container>
+  <el-header class="head" height="100px">
+      <h2>MyProject</h2>
+      <h4>this is a tableProject</h4>
+    </el-header>
+    <el-main>
+      <data-table></data-table>
+    </el-main>
+ </el-container>
 </template>
 
 <script>
+
+import DataTable from './components/DataTable'
 export default {
-  name: 'App'
+  name: 'App',
+  components:{
+    DataTable
+  }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.head{
+  background-color:lightcoral;
+  color: white;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
