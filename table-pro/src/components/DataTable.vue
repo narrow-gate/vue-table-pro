@@ -73,6 +73,7 @@ export default {
   },
   mounted() {
     this.update();
+    
   },
   methods: {
     update() {
