@@ -25,16 +25,16 @@
           <el-card header="书籍内容简介">{{scope.row.content}}</el-card>
         </template>
       </el-table-column>
-      <el-table-column label="学习书籍" prop="name"></el-table-column>
+      <el-table-column label="学习书籍" prop="name" sortable="custom"></el-table-column>
       <el-table-column label="作者">
         <template slot-scope="scope">{{scope.row.author.join(',')}}</template>
       </el-table-column>
-      <el-table-column label="学习计划状态">
+      <el-table-column label="学习计划状态" prop="status" sortable="custom">
         <template slot-scope="scope">
           <el-tag :type="statusColors[scope.row.status]">{{statuses[scope.row.status]}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="学习完成时间">
+      <el-table-column label="学习完成时间" prop="completeDate" sortable="custom" >
         <template slot-scope="scope">{{new Date(scope.row.completeDate).toLocaleDateString()}}</template>
       </el-table-column>
       <el-table-column label="操作">
@@ -44,6 +44,10 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination :total="total" :current-page="currentPage" :page-size="currentPageSize" :page-sizes="[3,5]"
+    layout="total,sizes,prev,pager,next,jumper"
+    @size-change="pageSizeChange" @current-change="pageChange">
+    </el-pagination>
   </view-page>
 </template>
 
@@ -61,11 +65,14 @@ export default {
       statuses: ["未开始", "进行中", "搁置", "完成"],
       statusColors: ["info", "primary", "warning", "success"],
       sortProp:'',
-      sortOrder:''
+      sortOrder:'',
+      currentPage:1,
+      currentPageSize:3
     };
   },
   mounted() {
     this.update();
+    
   },
   methods: {
     update() {
@@ -86,6 +93,12 @@ export default {
     sortChange(column){
         this.sortProp=column.sortProp
         this.sortOrder=column.order
+    },
+    pageSizeChange(size){
+      this.currentPageSize=size;
+    },
+    pageChange(page){
+      this.currentPage=page;
     }
   },
   computed: {
@@ -98,9 +111,37 @@ return !this.searchStr||reg.test(item.name)||reg.test(item.author.join(''))
  }).filter(item=>{
          return !this.filterDates || (this.filterDates[0] <= new Date(item.completeDate) && this.filterDates[1] >= new Date(item.completeDate))
  })
+    },
+    sortedData() {
+        if (!this.sortOrder || !this.sortProp || !this.filtedData || !this.filtedData.length) return this.filtedData
+        var reverse = this.sortOrder == 'descending' ? -1 : 1
+        switch (typeof this.filtedData[0][this.sortProp]) {
+            case 'number':
+                return this.filtedData.sort((a, b) => {
+                    return reverse * (a[this.sortProp] - b[this.sortProp])
+                })
+            case 'string':
+                if (JSON.stringify(new Date(this.filtedData[0][this.sortProp])) !== 'null') {
+                    return this.filtedData.sort((a, b) => {
+                        return reverse * (new Date(a[this.sortProp]) - new Date(b[this.sortProp]))
+                    })
+                } else {
+                    return this.filtedData.sort((a, b) => {
+                        var cmp = 0
+                        if (a[this.sortProp] > b[this.sortProp]) cmp = 1
+                        else if (a[this.sortProp] < b[this.sortProp]) cmp = -1
+                        return reverse * cmp
+                    })
+                }
+        }
+    },
+    total(){
+      return this.filtedData.lenght;
+    },
+    pagedData(){
+      return this.sortedData.slice((this.currentPage-1)*this.currentPageSize,this.currentPage*this.currentPageSize)
     }
-  }
-};
+}}
 </script>
 
 <style>
