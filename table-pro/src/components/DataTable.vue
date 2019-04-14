@@ -1,7 +1,7 @@
 <template>
   <view-page>
     <template slot="left-field">
-      <el-button type="danger" icon="el-icon-circle-plus-outline">添加</el-button>
+      <el-button type="danger" icon="el-icon-circle-plus-outline" @click="addTodo">添加</el-button>
     </template>
   <template slot="search-field">
     <el-input v-model="searchStr" suffix-icon="el-icon-search" placeholder="请输入搜索内容"></el-input>
@@ -43,6 +43,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <edit-dialog :show="editShow" title="编辑学习计划" @close="closeEditDialog" @save="saveTodo"></edit-dialog>
     <el-pagination :total="total" :current-page="currentPage" 
          :page-size="currentPageSize" :page-sizes="[1, 3]"
          layout="total, sizes, prev, pager, next, jumper"
@@ -53,9 +54,10 @@
 
 <script>
 import ViewPage from "./ViewPage";
+import EditDialog from "./EditDialog";
 export default {
   components: {
-    ViewPage
+    ViewPage,EditDialog
   },
   data() {
     return {
@@ -68,7 +70,7 @@ export default {
       sortOrder:'',
       currentPage: 1,
         currentPageSize: 3,
-  
+  editShow:false
     };
   },
   mounted() {
@@ -105,7 +107,16 @@ export default {
        this.$http.get('http://localhost:3000/todos').then(res => {  //这是从本地请求的数据接口，
                 this.List = res.body
             })
-    }
+    },
+    addTodo(){
+      this.editShow=true;
+    },
+    saveTodo(){
+      this.closeEditDialog()
+    },
+   closeEditDialog(){
+     this.editShow=false;
+   }
   },
   computed: {
     filtedData() {
