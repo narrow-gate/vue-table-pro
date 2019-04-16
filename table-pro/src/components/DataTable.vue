@@ -43,7 +43,23 @@
         </template>
       </el-table-column>
     </el-table>
-    <edit-dialog :show="editShow" title="编辑学习计划" @close="closeEditDialog" @save="saveTodo"></edit-dialog>
+    <edit-dialog :show="editShow" title="编辑学习计划" @close="closeEditDialog" @save="saveTodo">
+      <el-form :model="currentTodo" ref="todoEditForm">
+        <el-form-item lable="学习书籍" prop="name" required>
+          <el-input v-model="currentTodo.name"></el-input>
+          </el-form-item>
+           <el-form-item lable="书籍内容" prop="content" required>
+          <el-input v-model="currentTodo.content" type="textarea"></el-input>
+          </el-form-item>
+          <el-form-item lable="完成时间" prop="completeDate" required>
+            <el-data-picker v-model="currentTodo.completeData" type="date"> </el-date-picker>
+        </el-form-item>
+        <el-form-item lable="书籍作者" prop="author" required>
+            <el-tag v-for="author in currentAuthors" :key="author"> {{author}}</el-tag>
+            <span @keyip.enter="addAuthor"><el-input v-model="currentAuthor"></el-input></span>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click="addAuthor">添加作者</el-button>
+    </el-form-item>
+    </edit-dialog>
     <el-pagination :total="total" :current-page="currentPage" 
          :page-size="currentPageSize" :page-sizes="[1, 3]"
          layout="total, sizes, prev, pager, next, jumper"
@@ -70,7 +86,8 @@ export default {
       sortOrder:'',
       currentPage: 1,
         currentPageSize: 3,
-  editShow:false
+  editShow:false,
+  currentTodo:{}
     };
   },
   mounted() {
@@ -109,14 +126,29 @@ export default {
             })
     },
     addTodo(){
+      this.currentTodo={}
       this.editShow=true;
     },
     saveTodo(){
-      this.closeEditDialog()
+      this.$refs.todoEditForm.vailidate((valid)=>{
+        if(valid){
+          this.currentTodo._id?this.editAjax():this.addAjax()
+        }
+      })
+      //this.closeEditDialog()
     },
    closeEditDialog(){
+     this.currentTodo={}
+     this.$refs.todoEditForm.resetFields()
      this.editShow=false;
-   }
+   },
+   addAjax(){
+     this.closeEditDialog()
+   },
+   editAjax(){
+     this.closeEditDialog()
+   },
+   addAuthor
   },
   computed: {
     filtedData() {
