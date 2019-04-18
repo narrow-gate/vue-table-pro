@@ -88,6 +88,14 @@
                 </el-form-item>
             </el-form>
         </edit-dialog>
+        <el-dialog title="上传文件" :visible.sync="uploadShow">
+          <el-upload :action="uploadUrl" :on-success="uploadSuccess">
+            <el-button type="primary" icon="el-icon-upload">上传</el-button>
+          </el-upload>
+          <span slot="footer">
+            <el-button type="danger" icon="el-icon-close" @click="uploadShow=false">关闭</el-button>
+          </span>
+        </el-dialog>
   </view-page>
 </template>
 
@@ -112,7 +120,8 @@ export default {
   editShow:false,
   currentTodo:{},
                 currentAuthors: [],
-                currentAuthor: ''
+                currentAuthor: '',
+                uploadShow:false
     };
   },
   mounted() {
@@ -134,6 +143,9 @@ export default {
             message: err
           });
         });
+    },
+    uploadSuccess(res){
+      alert(res)
     },
     sortChange(column){
         this.sortProp=column.sortProp
@@ -222,6 +234,35 @@ if(res.data){
  type: 'error',
         message: err
       }))
+   },
+   downloadTodos(){
+     this.$ajax({
+       method:'post',
+       url:'todos/download',
+       responseType:'blob',
+       data:this.filtedData
+     }).then((res)=>{
+       var blob=new Blob([res.data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'})
+       var downloadElement=document.createElement('a')
+       var href=window.URL.createObjectURL(blob)
+       downloadElement.href=href
+       downloadElement.download="导出列表.xlsx"
+       document.body.appendChild(downloadElement)
+       downloadElement.click()
+       document.body.removeChild(downloadElement)
+       window.URL.revokeObjectURL(href)
+    }).catch((err)=>this.$notify({
+type:'error',
+message:err
+    }))
+   },
+   uploadSuccess(res){
+     this.$notify({
+       type:'success',
+       message:res
+     })
+     this.update()
+     this.uploadShow=false
    }
   },
   computed: {
@@ -240,6 +281,9 @@ return !this.searchStr||reg.test(item.name)||reg.test(item.author.join(''))
     },
     pagedData() {
         return this.filtedData.slice((this.currentPage - 1) * this.currentPageSize, this.currentPage * this.currentPageSize)
+    },
+    uploadUrl(){
+      return `${this.$ajax.defaults.baseURL}/todos/upload`
     }
   }
 }
